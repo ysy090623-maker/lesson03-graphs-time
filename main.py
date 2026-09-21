@@ -113,7 +113,48 @@ st.info("**이 그래프로 알 수 있는 것:** _(여기에 한 문장을 적�
 st.divider()
 
 # ══════════════════════════════════════════════════════════════════════
-# 구역 3. (다음 그래프를 위한 자리)
+# 구역 3. 날짜별 전체(10위권) 일관객 합계
 # ══════════════════════════════════════════════════════════════════════
-# 다음 그래프를 추가할 때는 아래에 st.header("구역 3 · ...") 부터
-# 시작해서 구역 1, 2와 같은 모양으로 이어서 쓰면 된다.
+st.header("구역 3 · 날짜별 10위권 전체 관객수")
+
+# 같은 날짜에 있는 10편의 일관객을 다 더한다.
+daily_total = df.groupby("날짜")["일관객"].sum().reset_index()
+daily_total.columns = ["날짜", "합계관객"]
+
+# 합계가 가장 컸던 3일을 찾는다.
+top3_days = daily_total.nlargest(3, "합계관객")
+
+# 영역 그래프(area chart): 선 아래를 색으로 채워서 그린다.
+fig3 = px.area(
+    daily_total,
+    x="날짜",
+    y="합계관객",
+    labels={"날짜": "날짜", "합계관객": "그날 10위권 합계 관객수"},
+    title="날짜별 10위권 전체 관객수 합계",
+)
+fig3.update_traces(hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계 관객수: %{y:,}명<extra></extra>")
+fig3.update_layout(yaxis_tickformat=",")
+
+# 합계가 가장 컸던 3일을 그래프 위에 점과 날짜로 표시한다.
+fig3.add_scatter(
+    x=top3_days["날짜"],
+    y=top3_days["합계관객"],
+    mode="markers+text",
+    marker=dict(size=12, color="crimson", symbol="star"),
+    text=top3_days["날짜"].dt.strftime("%Y-%m-%d"),  # 점 위에 날짜 글자 표시
+    textposition="top center",
+    name="합계 상위 3일",
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계 관객수: %{y:,}명<extra>합계 상위 3일</extra>",
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+st.info("**이 그래프로 알 수 있는 것:** _(여기에 한 문장을 적어 주세요)_")
+
+st.divider()
+
+# ══════════════════════════════════════════════════════════════════════
+# 구역 4. (다음 그래프를 위한 자리)
+# ══════════════════════════════════════════════════════════════════════
+# 다음 그래프를 추가할 때는 아래에 st.header("구역 4 · ...") 부터
+# 시작해서 구역 1, 2, 3과 같은 모양으로 이어서 쓰면 된다.
